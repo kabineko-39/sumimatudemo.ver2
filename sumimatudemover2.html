@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2B3A8C">
+<title>すみだまつり 福引き</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F5FB; --surface:#FFFFFF; --ink:#1B2147; --muted:#646B8C; --line:#DADDEA;
+  --ai:#2B3A8C; --stage:#2B3A8C; --shu:#D7372A;
+  --b-gold:#E3B53B; --b-silver:#B9BFCC; --b-red:#D7372A; --b-blue:#2E5BD8; --b-green:#2E9E5B; --b-white:#FFFFFF;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#11142A;--surface:#1A1F3F;--ink:#EEF0FA;--muted:#9AA0C2;--line:#2C3363;--ai:#8D9BF0;--stage:#26307A}
+}
+:root[data-theme="dark"]{--bg:#11142A;--surface:#1A1F3F;--ink:#EEF0FA;--muted:#9AA0C2;--line:#2C3363;--ai:#8D9BF0;--stage:#26307A}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;line-height:1.6}
+.wrap{max-width:640px;margin:0 auto;padding:14px 14px 32px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+h1{font-family:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;font-weight:400;font-size:1.3rem;margin:0;color:var(--ai)}
+.tabs{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.tab{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:.9rem;padding:6px 16px;border-radius:999px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ai);color:#fff}
+:root[data-theme="dark"] .tab[aria-selected="true"]{color:#11142A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tab[aria-selected="true"]{color:#11142A}}
+.tab:focus-visible,.draw:focus-visible,.btn:focus-visible,.chip:focus-visible,input:focus-visible{outline:3px solid var(--b-gold);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* Stage */
+.stage{background:var(--stage);color:#fff;border-radius:20px;padding:22px 18px 22px;display:flex;flex-direction:column;align-items:center;text-align:center;overflow:hidden}
+.count{font-family:"Dela Gothic One",sans-serif;font-size:clamp(2.8rem,15vw,4.6rem);line-height:1}
+.count small{font-family:"Zen Kaku Gothic New",sans-serif;font-size:1rem;font-weight:700;margin-left:4px;opacity:.85}
+.count-note{opacity:.75;font-size:.88rem;margin-top:4px}
+.stamps{display:flex;align-items:center;gap:6px;margin-top:16px;flex-wrap:wrap;justify-content:center;font-size:.88rem}
+.chip{appearance:none;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:999px;padding:6px 16px;font:inherit;font-weight:700;cursor:pointer;min-height:40px}
+.credit{margin-top:8px;font-weight:700;font-size:.95rem;min-height:1.6em}
+.tray{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:22px 0 20px;min-height:290px}
+.ball{width:clamp(110px,34vw,150px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.75),rgba(255,255,255,0) 38%),var(--ball,#ffffff22);
+  box-shadow:inset -10px -14px 24px rgba(0,0,0,.22),0 14px 0 -6px rgba(0,0,0,.18);border:2px solid rgba(255,255,255,.25)}
+.ball.empty{background:transparent;border:3px dashed rgba(255,255,255,.35);box-shadow:none}
+.ball.white{border-color:#cfd3e2}
+.ball.roll{animation:roll .85s cubic-bezier(.25,.9,.3,1.15)}
+@keyframes roll{0%{transform:translateY(-180px) rotate(-400deg) scale(.6);opacity:0}60%{opacity:1}100%{transform:none}}
+.ball.gold{animation:roll .85s cubic-bezier(.25,.9,.3,1.15),glow 1.4s ease-in-out .85s 3}
+@keyframes glow{50%{box-shadow:inset -10px -14px 24px rgba(0,0,0,.22),0 0 0 18px rgba(227,181,59,.35),0 0 60px 20px rgba(227,181,59,.5)}}
+.tier{font-weight:700;background:rgba(255,255,255,.14);padding:2px 14px;border-radius:999px;min-height:1.6em}
+.tier:empty{visibility:hidden}
+.prize{font-family:"Dela Gothic One",sans-serif;font-size:clamp(1.4rem,6.5vw,2.2rem);line-height:1.3;max-width:18ch}
+.draw{appearance:none;border:0;background:var(--shu);color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:1.5rem;
+  width:100%;max-width:340px;padding:16px 20px;border-radius:999px;cursor:pointer;box-shadow:0 6px 0 #9E2318;transition:transform .08s,box-shadow .08s;touch-action:manipulation}
+.draw:active{transform:translateY(4px);box-shadow:0 2px 0 #9E2318}
+.draw:disabled{opacity:.5;cursor:not-allowed}
+
+/* Admin */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.panel h2{font-size:1rem;margin:0 0 10px}
+.lock{text-align:center;padding:28px 18px}
+.lock p{margin:0 0 14px;color:var(--muted);font-size:.92rem}
+.lock form{display:flex;gap:8px;max-width:340px;margin:0 auto}
+.lock input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.err{color:var(--shu);font-size:.88rem;min-height:1.5em;margin-top:8px}
+.summary{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.summary b{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:1.6rem}
+.stock{display:grid;grid-template-columns:auto 1fr auto;gap:7px 10px;align-items:center;font-size:.9rem}
+.dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.15);flex:none}
+.stock .n{font-variant-numeric:tabular-nums;color:var(--muted);text-align:right;white-space:nowrap}
+.stock .n b{color:var(--ink)}
+.stock .out{opacity:.4}
+.hist{list-style:none;margin:0;padding:0;max-height:340px;overflow:auto;font-size:.9rem}
+.hist li{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.hist li:last-child{border-bottom:0}
+.hist .no{font-variant-numeric:tabular-nums;color:var(--muted);min-width:4.4em}
+.listbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:.88rem;color:var(--muted)}
+.listbar select{font:inherit;font-size:16px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.seq{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.seq table{width:100%;border-collapse:collapse;font-size:.88rem}
+.seq th,.seq td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+.seq th{position:sticky;top:0;background:var(--surface);font-weight:700;z-index:1}
+.seq td.no{font-variant-numeric:tabular-nums;color:var(--muted)}
+.seq tr.done td{opacity:.45}
+.seq tr.next td{background:color-mix(in srgb,var(--b-gold) 22%,transparent);opacity:1}
+.seq .dot{display:inline-block;vertical-align:-2px;margin-right:6px}
+.empty-msg{color:var(--muted);font-size:.9rem;margin:0}
+.btn{appearance:none;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:9px 14px;font:inherit;font-size:.9rem;cursor:pointer}
+.btn.primary{background:var(--ai);border-color:var(--ai);color:#fff}
+.btn.danger{color:var(--shu);border-color:var(--shu)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.rules{font-size:.86rem;color:var(--muted);margin:0 0 12px;padding-left:1.1em}
+@media (prefers-reduced-motion: reduce){.ball.roll,.ball.gold{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>すみだまつり 福引き</h1>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tabDraw" aria-selected="true" aria-controls="viewDraw">抽選</button>
+      <button class="tab" role="tab" id="tabAdmin" aria-selected="false" aria-controls="viewAdmin">管理</button>
+    </div>
+  </header>
+
+  <!-- 抽選 -->
+  <section id="viewDraw" role="tabpanel" aria-labelledby="tabDraw">
+    <div class="stage" aria-live="polite">
+      <div class="count"><span id="num">0</span><small>回目</small></div>
+      <div class="count-note" id="left">残り 4,000回</div>
+      <div class="stamps" role="group" aria-label="スタンプの数">
+        <span>スタンプ</span>
+        <button class="chip" data-s="2">2個</button><button class="chip" data-s="3">3個</button><button class="chip" data-s="4">4個</button>
+      </div>
+      <div class="credit" id="credit"></div>
+      <div class="tray">
+        <div class="ball empty" id="ball"></div>
+        <div class="tier" id="tier"></div>
+        <div class="prize" id="prize"></div>
+      </div>
+      <button class="draw" id="drawBtn">抽選する</button>
+    </div>
+  </section>
+
+  <!-- 管理 -->
+  <section id="viewAdmin" role="tabpanel" aria-labelledby="tabAdmin" hidden>
+    <div class="panel lock" id="lock">
+      <p>スタッフ用の画面です。パスワードを入力してください。</p>
+      <form id="loginForm" autocomplete="off">
+        <input type="password" id="pw" placeholder="パスワード" aria-label="パスワード">
+        <button class="btn primary" type="submit">開く</button>
+      </form>
+      <div class="err" id="err" role="alert"></div>
+    </div>
+
+    <div id="admin" hidden>
+      <div class="panel summary">
+        <span>通算抽選回数</span>
+        <span><b id="aNum">0</b> / 4,000回</span>
+      </div>
+      <div class="panel">
+        <h2>残りの景品</h2>
+        <div class="stock" id="stock"></div>
+      </div>
+      <div class="panel">
+        <h2>抽選履歴</h2>
+        <ul class="hist" id="hist"></ul>
+        <p class="empty-msg" id="histEmpty">まだ抽選していません。</p>
+      </div>
+      <div class="panel">
+        <h2>当選リスト（全4,000回）</h2>
+        <div class="listbar">
+          <label for="rankFilter">表示</label>
+          <select id="rankFilter">
+            <option value="">すべて</option>
+            <option>特賞</option><option>1等</option><option>2等</option><option>3等</option><option>4等</option><option>5等</option>
+          </select>
+          <span id="seqCount"></span>
+        </div>
+        <div class="seq"><table><thead><tr><th>回目</th><th>等級</th><th>景品</th></tr></thead><tbody id="seqBody"></tbody></table></div>
+        <p class="rules" style="margin:10px 0 0">これはデモ用の並びです。本番の当選リストとは順番が異なります。</p>
+      </div>
+      <div class="panel">
+        <h2>設定</h2>
+        <ul class="rules">
+          <li>428回目は自転車</li>
+          <li>オリナス商品券500枚は1,000回目までにすべて出ます</li>
+          <li>そのほかはランダム（引いた景品は戻りません）</li>
+          <li>スタンプ2〜3個で1回、4個で2回</li>
+          <li>4,000回目で終了</li>
+          <li>結果はこのブラウザに自動保存されます</li>
+        </ul>
+        <div class="actions">
+          <button class="btn" id="undoBtn">直前の1回を取り消す</button>
+          <button class="btn danger" id="resetBtn">最初からやり直す</button>
+          <button class="btn" id="logoutBtn">ロックする</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const PRIZES = [
+  {name:"自転車", n:1, tier:"gold", label:"特賞"},
+  {name:"トイコー サウンドシリーズ", n:3, tier:"silver", label:"1等"},
+  {name:"トイコー サウンドトレインシリーズ", n:6, tier:"silver", label:"1等"},
+  {name:"トイコー はらたく車", n:6, tier:"silver", label:"1等"},
+  {name:"トイコー ミニサウンドシリーズ", n:6, tier:"silver", label:"1等"},
+  {name:"新日本フィル コンサートペアチケット", n:8, tier:"silver", label:"1等"},
+  {name:"東新アクア 入場券", n:11, tier:"silver", label:"1等"},
+  {name:"キャンバストートバック", n:22, tier:"silver", label:"1等"},
+  {name:"熟まろ 逸品酢燻製", n:96, tier:"red", label:"2等"},
+  {name:"郵政博物館オリジナルふせん", n:120, tier:"red", label:"2等"},
+  {name:"ボディスポンジ", n:200, tier:"red", label:"2等"},
+  {name:"キュキュット", n:480, tier:"blue", label:"3等"},
+  {name:"オリナス商品券（200円分）", n:500, tier:"blue", label:"3等"},
+  {name:"ステッカー", n:541, tier:"green", label:"4等"},
+  {name:"ポケットティッシュ", n:2000, tier:"white", label:"5等"},
+];
+const BIKE=0, VOUCHER=12;
+const TOTAL=4000, BIKE_AT=428, VOUCHER_BY=1000;
+const CREDITS={2:1,3:1,4:2};
+const KEY="sumimatsu-lottery-v2";
+const PW_HASH="9196b2dff7cfa149757e4f2595a2ee871da20fe9ba2d4f72fba404a03355d93b";
+
+function rnd(max){const a=new Uint32Array(1),lim=Math.floor(0x100000000/max)*max;do{crypto.getRandomValues(a)}while(a[0]>=lim);return a[0]%max}
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=rnd(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+function buildSequence(){
+  const seq=new Array(TOTAL).fill(-1);
+  seq[BIKE_AT-1]=BIKE;
+  const early=[];for(let i=0;i<VOUCHER_BY;i++) if(i!==BIKE_AT-1) early.push(i);
+  shuffle(early).slice(0,PRIZES[VOUCHER].n).forEach(i=>seq[i]=VOUCHER);
+  const pool=[];PRIZES.forEach((p,id)=>{if(id!==BIKE&&id!==VOUCHER) for(let k=0;k<p.n;k++) pool.push(id)});
+  shuffle(pool);
+  let k=0;for(let i=0;i<TOTAL;i++) if(seq[i]===-1) seq[i]=pool[k++];
+  return seq;
+}
+
+let state=null, busy=false, unlocked=false;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.seq)&&s.seq.length===TOTAL&&typeof s.idx==="number")return s}catch(e){}return null}
+function fresh(){state={seq:buildSequence(),idx:0,credit:0};save()}
+
+const $=id=>document.getElementById(id);
+const tierColor=t=>`var(--b-${t})`;
+
+/* tabs */
+function showTab(name){
+  const draw=name==="draw";
+  $("tabDraw").setAttribute("aria-selected",draw);$("tabAdmin").setAttribute("aria-selected",!draw);
+  $("viewDraw").hidden=!draw;$("viewAdmin").hidden=draw;
+  if(!draw&&!unlocked) setTimeout(()=>$("pw").focus(),0);
+}
+$("tabDraw").addEventListener("click",()=>showTab("draw"));
+$("tabAdmin").addEventListener("click",()=>showTab("admin"));
+
+/* password */
+async function sha256(t){
+  const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+$("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  let ok=false;
+  try{ok=(await sha256($("pw").value))===PW_HASH}catch(err){$("err").textContent="このブラウザではロック解除できません。";return}
+  if(ok){unlocked=true;$("pw").value="";$("err").textContent="";setLock();renderAdmin()}
+  else{$("err").textContent="パスワードが違います。";$("pw").select()}
+});
+function setLock(){$("lock").hidden=unlocked;$("admin").hidden=!unlocked}
+$("logoutBtn").addEventListener("click",()=>{unlocked=false;setLock()});
+
+/* draw view */
+function setBall(id,animate){
+  const b=$("ball");b.className="ball";
+  if(id==null){b.classList.add("empty");b.style.removeProperty("--ball");return}
+  const p=PRIZES[id];b.style.setProperty("--ball",tierColor(p.tier));
+  if(p.tier==="white") b.classList.add("white");
+  if(animate){void b.offsetWidth;b.classList.add(p.tier==="gold"?"gold":"roll")}
+}
+function showResult(id,animate){
+  setBall(id,animate);
+  if(id==null){$("tier").textContent="";$("prize").textContent=state.credit>0?"ボタンを押して抽選":"スタンプの数を選んでください";return}
+  $("tier").textContent=PRIZES[id].label;$("prize").textContent=PRIZES[id].name;
+}
+function renderDraw(){
+  const i=state.idx,c=state.credit||0;
+  $("num").textContent=i.toLocaleString();
+  $("left").textContent=i>=TOTAL?"景品がなくなりました（抽選終了）":`残り ${(TOTAL-i).toLocaleString()}回`;
+  $("credit").textContent=i>=TOTAL?"":c>0?`残りの抽選権 ${c}回`:"";
+  $("drawBtn").disabled=i>=TOTAL||c<=0||busy;
+}
+function renderAdmin(){
+  if(!unlocked) return;
+  const i=state.idx;
+  $("aNum").textContent=i.toLocaleString();
+  const used=new Array(PRIZES.length).fill(0);for(let k=0;k<i;k++) used[state.seq[k]]++;
+  $("stock").innerHTML=PRIZES.map((p,id)=>{const rem=p.n-used[id],o=rem===0?' class="out"':'';
+    return `<span class="dot" style="background:${tierColor(p.tier)}"${o}></span><span${o}>${p.label}　${p.name}</span><span class="n"><b>${rem.toLocaleString()}</b> / ${p.n.toLocaleString()}</span>`}).join("");
+  let h="";for(let k=i-1;k>=Math.max(0,i-50);k--){const p=PRIZES[state.seq[k]];
+    h+=`<li><span class="no">${(k+1).toLocaleString()}回目</span><span class="dot" style="background:${tierColor(p.tier)}"></span><span>${p.name}</span></li>`}
+  $("hist").innerHTML=h;$("histEmpty").hidden=i>0;
+  $("undoBtn").disabled=i===0;
+  renderSeq();
+}
+function renderSeq(){
+  if(!unlocked) return;
+  const f=$("rankFilter").value, i=state.idx;
+  let html="",n=0;
+  for(let k=0;k<TOTAL;k++){
+    const p=PRIZES[state.seq[k]];
+    if(f&&p.label!==f) continue;
+    n++;
+    const cls=k<i?"done":k===i?"next":"";
+    html+=`<tr class="${cls}"><td class="no">${(k+1).toLocaleString()}</td><td>${p.label}</td><td><span class="dot" style="background:${tierColor(p.tier)}"></span>${p.name}</td></tr>`;
+  }
+  $("seqBody").innerHTML=html;
+  $("seqCount").textContent=`${n.toLocaleString()}件（薄い行は抽選済み、色付きは次の回）`;
+}
+$("rankFilter").addEventListener("change",renderSeq);
+function render(){renderDraw();renderAdmin()}
+
+function draw(){
+  if(busy||state.idx>=TOTAL||!(state.credit>0)) return;
+  busy=true;
+  const id=state.seq[state.idx];state.idx++;state.credit--;save();
+  render();showResult(id,true);
+  const wait=matchMedia("(prefers-reduced-motion: reduce)").matches?150:(PRIZES[id].tier==="gold"?1800:850);
+  setTimeout(()=>{busy=false;renderDraw()},wait);
+}
+$("drawBtn").addEventListener("click",draw);
+document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{
+  if(busy||state.idx>=TOTAL) return;
+  if((state.credit||0)>0&&!confirm(`まだ抽選権が${state.credit}回残っています。次の人に切り替えますか？`)) return;
+  state.credit=Math.min(CREDITS[b.dataset.s],TOTAL-state.idx);save();
+  showResult(null,false);renderDraw();
+}));
+
+/* admin actions */
+$("undoBtn").addEventListener("click",()=>{
+  if(busy||state.idx===0) return;
+  if(!confirm(`${state.idx}回目の結果（${PRIZES[state.seq[state.idx-1]].name}）を取り消しますか？\n次に引くと同じ景品が出ます。`)) return;
+  state.idx--;state.credit=(state.credit||0)+1;save();render();showResult(null,false);
+});
+$("resetBtn").addEventListener("click",()=>{
+  if(!confirm("抽選結果をすべて消して、景品の並びを作り直しますか？\nこの操作は元に戻せません。")) return;
+  fresh();render();showResult(null,false);
+});
+
+state=load();if(!state) fresh();
+setLock();render();showResult(state.idx>0?state.seq[state.idx-1]:null,false);
+</script>
+</body>
+</html>
