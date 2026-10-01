@@ -115,9 +115,9 @@ h1{font-family:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;font-weight:40
     <div class="stage" aria-live="polite">
       <div class="count"><span id="num">0</span><small>回目</small></div>
       <div class="count-note" id="left">残り 4,000回</div>
-      <div class="stamps" role="group" aria-label="スタンプの数">
-        <span>スタンプ</span>
-        <button class="chip" data-s="2">2個</button><button class="chip" data-s="3">3個</button><button class="chip" data-s="4">4個</button>
+      <div class="stamps" role="group" aria-label="抽選回数">
+        <span>抽選回数</span>
+        <button class="chip" data-s="1">1回</button><button class="chip" data-s="2">2回</button>
       </div>
       <div class="credit" id="credit"></div>
       <div class="tray">
@@ -151,7 +151,8 @@ h1{font-family:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;font-weight:40
           <li>自転車とオリナス商品券500枚は、1,000回目までのどこかですべて出ます</li>
           <li>そのほかは引いた瞬間にランダムで決まります（引いた景品は戻りません）</li>
           <li>出る順番は事前に決まっておらず、運営も引くまでわかりません</li>
-          <li>スタンプ2〜3個で1回、4個で2回</li>
+          <li>スタンプ2個＋カラーハンティング2個で1回、どちらも4個ずつで2回</li>
+          <li>抽選画面では、ゲーム画面に表示された抽選回数（1回／2回）を選びます</li>
           <li>4,000回目で終了</li>
           <li>結果はこのブラウザに自動保存されます</li>
         </ul>
@@ -184,7 +185,7 @@ const PRIZES = [
 ];
 const BIKE=0, VOUCHER=12;
 const TOTAL=4000, EARLY_BY=1000; // 自転車と商品券は1,000回目までに全部出す
-const CREDITS={2:1,3:1,4:2};
+const CREDITS={1:1,2:2}; // ゲーム画面に表示された抽選回数
 const KEY="sumimatsu-lottery-live-v2:"+location.pathname; // ページごとに別の保存領域
 
 function rnd(max){const a=new Uint32Array(1),lim=Math.floor(0x100000000/max)*max;do{crypto.getRandomValues(a)}while(a[0]>=lim);return a[0]%max}
@@ -229,7 +230,7 @@ function setBall(id,animate){
 }
 function showResult(id,animate){
   setBall(id,animate);
-  if(id==null){$("tier").textContent="";$("prize").textContent=state.credit>0?"ボタンを押して抽選":"スタンプの数を選んでください";return}
+  if(id==null){$("tier").textContent="";$("prize").textContent=state.credit>0?"ボタンを押して抽選":"抽選回数を選んでください";return}
   $("tier").textContent=PRIZES[id].label;$("prize").textContent=PRIZES[id].name;
 }
 function renderDraw(){
