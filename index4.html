@@ -99,68 +99,30 @@ h1{font-family:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;font-weight:40
 .rules{font-size:.86rem;color:var(--muted);margin:0 0 12px;padding-left:1.1em}
 @media (prefers-reduced-motion: reduce){.ball.roll,.ball.gold{animation:none}}
 </style>
+<style>
+header a{color:var(--ai);font-weight:700;font-size:.9rem;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;background:var(--surface)}
+.stage .done{font-weight:700;opacity:.85;min-height:1.6em;margin-top:2px}
+</style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>すみだまつり 福引き</h1>
-    <div class="tabs" role="tablist">
-      <button class="tab" role="tab" id="tabDraw" aria-selected="true" aria-controls="viewDraw">抽選</button>
-      <button class="tab" role="tab" id="tabAdmin" aria-selected="false" aria-controls="viewAdmin">管理</button>
-    </div>
   </header>
-
-  <!-- 抽選 -->
-  <section id="viewDraw" role="tabpanel" aria-labelledby="tabDraw">
+  <section>
     <div class="stage" aria-live="polite">
-      <div class="count"><span id="num">0</span><small>回目</small></div>
-      <div class="count-note" id="left">残り 4,000回</div>
       <div class="stamps" role="group" aria-label="抽選回数">
         <span>抽選回数</span>
         <button class="chip" data-s="1">1回</button><button class="chip" data-s="2">2回</button>
       </div>
       <div class="credit" id="credit"></div>
+      <div class="done" id="done"></div>
       <div class="tray">
         <div class="ball empty" id="ball"></div>
         <div class="tier" id="tier"></div>
         <div class="prize" id="prize"></div>
       </div>
       <button class="draw" id="drawBtn">抽選する</button>
-    </div>
-  </section>
-
-  <!-- 管理 -->
-  <section id="viewAdmin" role="tabpanel" aria-labelledby="tabAdmin" hidden>
-    <div id="admin">
-      <div class="panel summary">
-        <span>通算抽選回数</span>
-        <span><b id="aNum">0</b> / 4,000回</span>
-      </div>
-      <div class="panel">
-        <h2>残りの景品</h2>
-        <div class="stock" id="stock"></div>
-      </div>
-      <div class="panel">
-        <h2>抽選履歴</h2>
-        <ul class="hist" id="hist"></ul>
-        <p class="empty-msg" id="histEmpty">まだ抽選していません。</p>
-      </div>
-      <div class="panel">
-        <h2>設定</h2>
-        <ul class="rules">
-          <li>自転車とオリナス商品券500枚は、1,000回目までのどこかですべて出ます</li>
-          <li>そのほかは引いた瞬間にランダムで決まります（引いた景品は戻りません）</li>
-          <li>出る順番は事前に決まっておらず、運営も引くまでわかりません</li>
-          <li>スタンプ2個＋カラーハンティング2個で1回、どちらも4個ずつで2回</li>
-          <li>抽選画面では、ゲーム画面に表示された抽選回数（1回／2回）を選びます</li>
-          <li>4,000回目で終了</li>
-          <li>結果はこのブラウザに自動保存されます</li>
-        </ul>
-        <div class="actions">
-          <button class="btn" id="undoBtn">直前の1回を取り消す</button>
-          <button class="btn danger" id="resetBtn">最初からやり直す</button>
-        </div>
-      </div>
     </div>
   </section>
 </div>
@@ -184,26 +146,28 @@ const PRIZES = [
   {name:"ポケットティッシュ", n:2000, tier:"white", label:"5等"},
 ];
 const BIKE=0, VOUCHER=12;
-const TOTAL=4000, EARLY_BY=1000; // 自転車と商品券は1,000回目までに全部出す
+const TOTAL=4000, BIKE_BY=1000, VOUCHER_BY=1500; // 自転車は1,000回目まで、商品券は1,500回目までに全部出す
 const CREDITS={1:1,2:2}; // ゲーム画面に表示された抽選回数
-const KEY="sumimatsu-lottery-live-v2:"+location.pathname; // ページごとに別の保存領域
+const KEY="sumimatsu-index4-live-v1"; // 抽選ページと管理ページで共通の保存領域
 
 function rnd(max){const a=new Uint32Array(1),lim=Math.floor(0x100000000/max)*max;do{crypto.getRandomValues(a)}while(a[0]>=lim);return a[0]%max}
 function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=rnd(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
 // 「抽選する」を押した瞬間に景品を決める（事前の並びは作らない）
 function pickPrize(){
   const n=state.idx+1, rem=state.rem;
-  if(n<=EARLY_BY){
-    // 1,000回目までの残り枠に対して、自転車＋商品券の残りの割合で当てる
-    const early=rem[BIKE]+rem[VOUCHER];
-    if(early>0 && rnd(EARLY_BY-n+1)<early) return rnd(early)<rem[BIKE]?BIKE:VOUCHER;
+  // 自転車：1,000回目までの残り枠に対して1本
+  if(n<=BIKE_BY && rem[BIKE]>0 && rnd(BIKE_BY-n+1)<rem[BIKE]) return BIKE;
+  // 商品券：1,500回目までの残り枠（自転車用に取っておく枠は除く）に対して残り枚数の割合
+  if(n<=VOUCHER_BY && rem[VOUCHER]>0){
+    const slots=(VOUCHER_BY-n+1)-rem[BIKE];
+    if(rnd(slots)<rem[VOUCHER]) return VOUCHER;
   }
   let total=0; rem.forEach((c,id)=>{if(id!==BIKE&&id!==VOUCHER) total+=c});
   let r=rnd(total);
   for(let id=0;id<rem.length;id++){ if(id===BIKE||id===VOUCHER) continue; if(r<rem[id]) return id; r-=rem[id]; }
 }
 
-let state=null, busy=false, unlocked=true;
+let state=null, busy=false;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.hist)&&Array.isArray(s.rem)&&s.rem.length===PRIZES.length&&s.hist.length===s.idx)return s}catch(e){}return null}
 function fresh(){state={hist:[],rem:PRIZES.map(p=>p.n),idx:0,credit:0};save()}
@@ -211,16 +175,6 @@ function fresh(){state={hist:[],rem:PRIZES.map(p=>p.n),idx:0,credit:0};save()}
 const $=id=>document.getElementById(id);
 const tierColor=t=>`var(--b-${t})`;
 
-/* tabs */
-function showTab(name){
-  const draw=name==="draw";
-  $("tabDraw").setAttribute("aria-selected",draw);$("tabAdmin").setAttribute("aria-selected",!draw);
-  $("viewDraw").hidden=!draw;$("viewAdmin").hidden=draw;
-}
-$("tabDraw").addEventListener("click",()=>showTab("draw"));
-$("tabAdmin").addEventListener("click",()=>showTab("admin"));
-
-/* draw view */
 function setBall(id,animate){
   const b=$("ball");b.className="ball";
   if(id==null){b.classList.add("empty");b.style.removeProperty("--ball");return}
@@ -235,30 +189,16 @@ function showResult(id,animate){
 }
 function renderDraw(){
   const i=state.idx,c=state.credit||0;
-  $("num").textContent=i.toLocaleString();
-  $("left").textContent=i>=TOTAL?"景品がなくなりました（抽選終了）":`残り ${(TOTAL-i).toLocaleString()}回`;
+  $("done").textContent=i>=TOTAL?"景品がなくなりました（抽選終了）":"";
   $("credit").textContent=i>=TOTAL?"":c>0?`残りの抽選権 ${c}回`:"";
   $("drawBtn").disabled=i>=TOTAL||c<=0||busy;
 }
-function renderAdmin(){
-  if(!unlocked) return;
-  const i=state.idx;
-  $("aNum").textContent=i.toLocaleString();
-  $("stock").innerHTML=PRIZES.map((p,id)=>{const rem=state.rem[id],o=rem===0?' class="out"':'';
-    return `<span class="dot" style="background:${tierColor(p.tier)}"${o}></span><span${o}>${p.label}　${p.name}</span><span class="n"><b>${rem.toLocaleString()}</b> / ${p.n.toLocaleString()}</span>`}).join("");
-  let h="";for(let k=i-1;k>=Math.max(0,i-50);k--){const p=PRIZES[state.hist[k]];
-    h+=`<li><span class="no">${(k+1).toLocaleString()}回目</span><span class="dot" style="background:${tierColor(p.tier)}"></span><span>${p.name}</span></li>`}
-  $("hist").innerHTML=h;$("histEmpty").hidden=i>0;
-  $("undoBtn").disabled=i===0;
-}
-
-function render(){renderDraw();renderAdmin()}
 
 function draw(){
   if(busy||state.idx>=TOTAL||!(state.credit>0)) return;
   busy=true;
   const id=pickPrize();state.hist.push(id);state.rem[id]--;state.idx++;state.credit--;save();
-  render();showResult(id,true);
+  renderDraw();showResult(id,true);
   const wait=matchMedia("(prefers-reduced-motion: reduce)").matches?150:(PRIZES[id].tier==="gold"?1800:850);
   setTimeout(()=>{busy=false;renderDraw()},wait);
 }
@@ -269,20 +209,11 @@ document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{
   state.credit=Math.min(CREDITS[b.dataset.s],TOTAL-state.idx);save();
   showResult(null,false);renderDraw();
 }));
-
-/* admin actions */
-$("undoBtn").addEventListener("click",()=>{
-  if(busy||state.idx===0) return;
-  if(!confirm(`${state.idx}回目の結果（${PRIZES[state.hist[state.idx-1]].name}）を取り消しますか？\n景品は箱に戻り、次はあらためて抽選します。`)) return;
-  const back=state.hist.pop();state.rem[back]++;state.idx--;state.credit=(state.credit||0)+1;save();render();showResult(null,false);
-});
-$("resetBtn").addEventListener("click",()=>{
-  if(!confirm("抽選結果をすべて消して、最初からやり直しますか？\nこの操作は元に戻せません。")) return;
-  fresh();render();showResult(null,false);
-});
+// 管理ページで取り消し・リセットされたら反映
+window.addEventListener("storage",e=>{if(e.key!==KEY||busy) return;state=load()||(fresh(),state);renderDraw();showResult(null,false)});
 
 state=load();if(!state) fresh();
-render();showResult(state.idx>0?state.hist[state.idx-1]:null,false);
+renderDraw();showResult(null,false);
 </script>
 </body>
 </html>
