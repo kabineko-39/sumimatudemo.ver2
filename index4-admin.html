@@ -113,7 +113,7 @@ header a{color:var(--ai);font-weight:700;font-size:.9rem;text-decoration:none;bo
     <div id="admin">
       <div class="panel summary">
         <span>通算抽選回数</span>
-        <span><b id="aNum">0</b> / 4,000回</span>
+        <span><b id="aNum">0</b> / 3,000回</span>
       </div>
       <div class="panel">
         <h2>残りの景品</h2>
@@ -128,12 +128,12 @@ header a{color:var(--ai);font-weight:700;font-size:.9rem;text-decoration:none;bo
         <h2>設定</h2>
         <ul class="rules">
           <li>自転車は1,000回目までのどこかで出ます</li>
-          <li>オリナス食事券500枚は1,500回目までにすべて出ます</li>
+          <li>オリナス商品券500枚は1,500回目までにすべて出ます</li>
           <li>そのほかは引いた瞬間にランダムで決まります（引いた景品は戻りません）</li>
           <li>出る順番は事前に決まっておらず、運営も引くまでわかりません</li>
           <li>スタンプ2個＋カラーハンティング2個で1回、どちらも4個ずつで2回</li>
           <li>抽選画面では、ゲーム画面に表示された抽選回数（1回／2回）を選びます</li>
-          <li>4,000回目で終了</li>
+          <li>3,000回目で終了</li>
           <li>結果はこのブラウザに自動保存され、同じブラウザの抽選ページと共有されます</li>
         </ul>
         <div class="actions">
@@ -158,14 +158,14 @@ const PRIZES = [
   {name:"郵政博物館オリジナルふせん", n:120, tier:"red", label:"2等"},
   {name:"ボディスポンジ", n:200, tier:"red", label:"2等"},
   {name:"キュキュット", n:480, tier:"blue", label:"3等"},
-  {name:"オリナス食事券（200円分）", n:500, tier:"blue", label:"3等"},
+  {name:"オリナス商品券（200円分）", n:500, tier:"blue", label:"3等"},
   {name:"ステッカー", n:541, tier:"green", label:"4等"},
-  {name:"ポケットティッシュ", n:2000, tier:"white", label:"5等"},
+  {name:"ポケットティッシュ", n:1000, tier:"white", label:"5等"},
 ];
 const BIKE=0, VOUCHER=12;
-const TOTAL=4000, BIKE_BY=1000, VOUCHER_BY=1500; // 自転車は1,000回目まで、商品券は1,500回目までに全部出す
+const TOTAL=3000, BIKE_BY=1000, VOUCHER_BY=1500; // 自転車は1,000回目まで、商品券は1,500回目までに全部出す
 const CREDITS={1:1,2:2}; // ゲーム画面に表示された抽選回数
-const KEY="sumimatsu-index4-live-v1"; // 抽選ページと管理ページで共通の保存領域
+const KEY="sumimatsu-index4-live-v2"; // 抽選ページと管理ページで共通の保存領域
 
 function rnd(max){const a=new Uint32Array(1),lim=Math.floor(0x100000000/max)*max;do{crypto.getRandomValues(a)}while(a[0]>=lim);return a[0]%max}
 function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=rnd(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
