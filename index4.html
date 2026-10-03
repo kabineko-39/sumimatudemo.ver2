@@ -169,8 +169,8 @@ function pickPrize(){
 
 let state=null, busy=false;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.hist)&&Array.isArray(s.rem)&&s.rem.length===PRIZES.length&&s.hist.length===s.idx)return s}catch(e){}return null}
-function fresh(){state={hist:[],rem:PRIZES.map(p=>p.n),idx:0,credit:0};save()}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.hist)&&Array.isArray(s.rem)&&s.rem.length===PRIZES.length&&s.hist.length===s.idx){if(!s.presses)s.presses={1:0,2:0};return s}}catch(e){}return null}
+function fresh(){state={hist:[],rem:PRIZES.map(p=>p.n),idx:0,credit:0,presses:{1:0,2:0}};save()}
 
 const $=id=>document.getElementById(id);
 const tierColor=t=>`var(--b-${t})`;
@@ -206,7 +206,8 @@ $("drawBtn").addEventListener("click",draw);
 document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{
   if(busy||state.idx>=TOTAL) return;
   if((state.credit||0)>0&&!confirm(`まだ抽選権が${state.credit}回残っています。次の人に切り替えますか？`)) return;
-  state.credit=Math.min(CREDITS[b.dataset.s],TOTAL-state.idx);save();
+  state.credit=Math.min(CREDITS[b.dataset.s],TOTAL-state.idx);
+  state.presses[b.dataset.s]=(state.presses[b.dataset.s]||0)+1;save(); // 押された回数を記録
   showResult(null,false);renderDraw();
 }));
 // 管理ページで取り消し・リセットされたら反映
