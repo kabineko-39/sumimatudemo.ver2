@@ -101,6 +101,8 @@ h1{font-family:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;font-weight:40
 </style>
 <style>
 header a{color:var(--ai);font-weight:700;font-size:.9rem;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;background:var(--surface)}
+.snd{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;font:inherit;font-size:.88rem;font-weight:700;cursor:pointer}
+.snd:focus-visible{outline:3px solid var(--b-gold);outline-offset:2px}
 .stage .done{font-weight:700;opacity:.85;min-height:1.6em;margin-top:2px}
 </style>
 </head>
@@ -108,6 +110,7 @@ header a{color:var(--ai);font-weight:700;font-size:.9rem;text-decoration:none;bo
 <div class="wrap">
   <header>
     <h1>すみだまつり 福引き</h1>
+    <button class="snd" id="sndBtn" aria-pressed="true">🔊 音あり</button>
   </header>
   <section>
     <div class="stage" aria-live="polite">
@@ -141,7 +144,7 @@ const PRIZES = [
   {name:"郵政博物館オリジナルふせん", n:120, tier:"red", label:"2等"},
   {name:"ボディスポンジ", n:200, tier:"red", label:"2等"},
   {name:"キュキュット", n:480, tier:"blue", label:"3等"},
-  {name:"オリナス食事券（200円分）", n:500, tier:"blue", label:"3等"},
+  {name:"オリナス商品券（200円分）", n:500, tier:"blue", label:"3等"},
   {name:"ステッカー", n:541, tier:"green", label:"4等"},
   {name:"ポケットティッシュ", n:1000, tier:"white", label:"5等"},
 ];
@@ -199,9 +202,63 @@ function draw(){
   busy=true;
   const id=pickPrize();state.hist.push(id);state.rem[id]--;state.idx++;state.credit--;save();
   renderDraw();showResult(id,true);
-  const wait=matchMedia("(prefers-reduced-motion: reduce)").matches?150:(PRIZES[id].tier==="gold"?1800:850);
+  const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(soundOn){ if(!reduced) playRattle(); setTimeout(()=>playResult(PRIZES[id].tier), reduced?50:780); }
+  const wait=reduced?150:(PRIZES[id].tier==="gold"?1800:850);
   setTimeout(()=>{busy=false;renderDraw()},wait);
 }
+
+/* 効果音（Web Audioで生成。音声ファイルは使わない） */
+let actx=null, soundOn=true;
+try{soundOn=localStorage.getItem("sumimatsu-sound")!=="off"}catch(e){}
+function ac(){
+  if(!actx){const C=window.AudioContext||window.webkitAudioContext;if(!C) return null;actx=new C()}
+  if(actx.state==="suspended") actx.resume();
+  return actx;
+}
+function tone(freq,t,dur,type="triangle",vol=.18){
+  const a=ac();if(!a) return;
+  const o=a.createOscillator(),g=a.createGain();
+  o.type=type;o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.05);
+}
+function tick(t,pitch){ // ガラガラの玉の音
+  const a=ac();if(!a) return;
+  const len=Math.floor(a.sampleRate*.035),buf=a.createBuffer(1,len,a.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);
+  const src=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();
+  src.buffer=buf;f.type="bandpass";f.frequency.value=pitch;f.Q.value=4;g.gain.value=.5;
+  src.connect(f).connect(g).connect(a.destination);src.start(t);
+}
+function playRattle(){
+  const a=ac();if(!a) return;const now=a.currentTime;
+  for(let i=0;i<13;i++) tick(now+i*.055+(Math.random()*.012),1800+Math.random()*1400);
+}
+const N={C5:523.25,E5:659.25,G5:783.99,A5:880,C6:1046.5,E6:1318.5,G6:1568};
+function playResult(tier){
+  const a=ac();if(!a) return;const t=a.currentTime+.02;
+  if(tier==="gold"){ // 特賞：ファンファーレ
+    [[N.C5,0],[N.E5,.12],[N.G5,.24],[N.C6,.36]].forEach(([f,d])=>tone(f,t+d,.22,"square",.09));
+    [N.C6,N.E6,N.G6].forEach(f=>tone(f,t+.52,1.2,"triangle",.12));
+    for(let i=0;i<8;i++) tone(2093+i*140,t+.6+i*.07,.18,"sine",.05);
+  }else if(tier==="silver"){ // 1等
+    [N.C5,N.E5,N.G5,N.C6].forEach((f,i)=>tone(f,t+i*.09,.3,"triangle",.15));
+    tone(N.E6,t+.38,.6,"sine",.1);
+  }else if(tier==="red"){ // 2等
+    [N.E5,N.G5,N.C6].forEach((f,i)=>tone(f,t+i*.09,.3,"triangle",.15));
+  }else if(tier==="blue"){ // 3等
+    tone(N.G5,t,.25,"triangle",.15);tone(N.C6,t+.1,.4,"triangle",.15);
+  }else{ // 4等・5等
+    tone(N.A5,t,.35,"sine",.15);
+  }
+}
+function setSound(on){
+  soundOn=on;try{localStorage.setItem("sumimatsu-sound",on?"on":"off")}catch(e){}
+  $("sndBtn").textContent=on?"🔊 音あり":"🔇 音なし";$("sndBtn").setAttribute("aria-pressed",on);
+}
+$("sndBtn").addEventListener("click",()=>{setSound(!soundOn);if(soundOn){ac();tone(N.C6,actx?actx.currentTime:0,.15,"sine",.1)}});
+setSound(soundOn);
 $("drawBtn").addEventListener("click",draw);
 document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{
   if(busy||state.idx>=TOTAL) return;
