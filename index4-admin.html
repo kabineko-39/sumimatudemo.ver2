@@ -125,6 +125,11 @@ header a{color:var(--ai);font-weight:700;font-size:.9rem;text-decoration:none;bo
         <p class="empty-msg" id="histEmpty">まだ抽選していません。</p>
       </div>
       <div class="panel">
+        <h2>抽選回数ボタンが押された回数</h2>
+        <div class="summary"><span>合計</span><span><b id="pTotal">0</b> 回</span></div>
+        <p class="rules" style="margin:8px 0 0">内訳：1回 <b id="p1">0</b> ／ 2回 <b id="p2">0</b></p>
+      </div>
+      <div class="panel">
         <h2>設定</h2>
         <ul class="rules">
           <li>自転車は500回目までのどこかで出ます</li>
@@ -186,8 +191,8 @@ function pickPrize(){
 
 let state=null, busy=false;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.hist)&&Array.isArray(s.rem)&&s.rem.length===PRIZES.length&&s.hist.length===s.idx)return s}catch(e){}return null}
-function fresh(){state={hist:[],rem:PRIZES.map(p=>p.n),idx:0,credit:0};save()}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.hist)&&Array.isArray(s.rem)&&s.rem.length===PRIZES.length&&s.hist.length===s.idx){if(!s.presses)s.presses={1:0,2:0};return s}}catch(e){}return null}
+function fresh(){state={hist:[],rem:PRIZES.map(p=>p.n),idx:0,credit:0,presses:{1:0,2:0}};save()}
 
 const $=id=>document.getElementById(id);
 const tierColor=t=>`var(--b-${t})`;
@@ -201,6 +206,9 @@ function renderAdmin(){
     h+=`<li><span class="no">${(k+1).toLocaleString()}回目</span><span class="dot" style="background:${tierColor(p.tier)}"></span><span>${p.name}</span></li>`}
   $("hist").innerHTML=h;$("histEmpty").hidden=i>0;
   $("undoBtn").disabled=i===0;
+  const pr=state.presses||{1:0,2:0};
+  $("p1").textContent=(pr[1]||0).toLocaleString();$("p2").textContent=(pr[2]||0).toLocaleString();
+  $("pTotal").textContent=((pr[1]||0)+(pr[2]||0)).toLocaleString();
 }
 
 
