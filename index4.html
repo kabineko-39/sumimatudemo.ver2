@@ -146,18 +146,18 @@ const PRIZES = [
   {name:"ポケットティッシュ", n:1000, tier:"white", label:"5等"},
 ];
 const BIKE=0, VOUCHER=12;
-const TOTAL=3000, BIKE_BY=1000, VOUCHER_BY=1500; // 自転車は1,000回目まで、商品券は1,500回目までに全部出す
+const TOTAL=3000, BIKE_BY=500, VOUCHER_BY=1000; // 自転車は500回目まで、商品券は1,000回目までに全部出す
 const CREDITS={1:1,2:2}; // ゲーム画面に表示された抽選回数
-const KEY="sumimatsu-index4-live-v2"; // 抽選ページと管理ページで共通の保存領域
+const KEY="sumimatsu-index4-live-v3"; // 抽選ページと管理ページで共通の保存領域
 
 function rnd(max){const a=new Uint32Array(1),lim=Math.floor(0x100000000/max)*max;do{crypto.getRandomValues(a)}while(a[0]>=lim);return a[0]%max}
 function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=rnd(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
 // 「抽選する」を押した瞬間に景品を決める（事前の並びは作らない）
 function pickPrize(){
   const n=state.idx+1, rem=state.rem;
-  // 自転車：1,000回目までの残り枠に対して1本
+  // 自転車：500回目までの残り枠に対して1本
   if(n<=BIKE_BY && rem[BIKE]>0 && rnd(BIKE_BY-n+1)<rem[BIKE]) return BIKE;
-  // 商品券：1,500回目までの残り枠（自転車用に取っておく枠は除く）に対して残り枚数の割合
+  // 商品券：1,000回目までの残り枠（自転車用に取っておく枠は除く）に対して残り枚数の割合
   if(n<=VOUCHER_BY && rem[VOUCHER]>0){
     const slots=(VOUCHER_BY-n+1)-rem[BIKE];
     if(rnd(slots)<rem[VOUCHER]) return VOUCHER;
